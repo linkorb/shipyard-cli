@@ -1,0 +1,41 @@
+{
+    "name": "linkorb/shipyard-cli",
+	"description": "Shipyard Symfony CLI",
+	"homepage": "http://www.github.com/linkorb/shipyard-cli",
+	"keywords": [
+		"php",
+		"shipyard",
+		"cli"
+	],
+	"authors": [
+		{
+			"name": "Kostiantyn Kovela",
+			"email": "k.kovela11@gmail.com",
+			"role": "Development"
+		},
+		{
+			"name": "Joost Faassen",
+			"email": "j.faassen@linkorb.com",
+			"role": "Development"
+		}
+	],
+    "require": {
+        "symfony/yaml": "^6.3",
+        "symfony/console": "^6.3",
+        "spatie/docker": "^1.11"
+    },
+	"autoload": {
+		"psr-4": {
+			"LinkORB\\Shipyard\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"LinkORB\\Tests\\Shipyard\\": "tests/"
+		}
+	},
+	"bin": [
+		"bin/shipyard"
+	],
+	"license": "MIT"
+}
