@@ -20,4 +20,4 @@ stacks:
     host: swarm-host-b
     values: my-whoami-b/values.yaml
 settings:
-  chart_path: ~/charts
+  charts_path: example/charts

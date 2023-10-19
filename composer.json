@@ -22,7 +22,9 @@
     "require": {
         "symfony/yaml": "^6.3",
         "symfony/console": "^6.3",
-        "spatie/docker": "^1.11"
+        "spatie/docker": "^1.11",
+        "spatie/ssh": "^1.9",
+        "twig/twig": "^3.0"
     },
 	"autoload": {
 		"psr-4": {
