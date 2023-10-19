@@ -1,0 +1,23 @@
+# shipyard.yaml
+stacks:
+  - name: my-traefik
+    chart: traefik
+    host: swarm-host-a
+    values: my-traefik/values.yaml
+
+  - name: my-whoami
+    chart: whoami
+    host: swarm-host-a
+    values: my-whoami/values.yaml
+
+  - name: my-mariadb
+    chart: mariadb
+    host: swarm-host-a
+    values: my-mariadb/values.yaml
+
+  - name: my-whoami-b
+    chart: whoami
+    host: swarm-host-b
+    values: my-whoami-b/values.yaml
+settings:
+  chart_path: ~/charts
