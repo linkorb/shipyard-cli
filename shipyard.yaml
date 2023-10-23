@@ -2,7 +2,7 @@
 stacks:
   - name: my-traefik
     chart: traefik
-    host: swarm-host-a
+    host: localhost
     values: my-traefik/values.yaml
 
   - name: my-whoami
@@ -21,3 +21,7 @@ stacks:
     values: my-whoami-b/values.yaml
 settings:
   charts_path: example/charts
+  # Target connection. Values: remote/local
+  target: remote
+  # Template directory path on the remote host
+  stack_path: /opt/shipyard/stacks
