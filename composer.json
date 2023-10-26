@@ -24,7 +24,8 @@
         "symfony/console": "^6.3",
         "spatie/docker": "^1.11",
         "spatie/ssh": "^1.9",
-        "twig/twig": "^3.0"
+        "twig/twig": "^3.0",
+        "justinrainbow/json-schema": "^5.2"
     },
 	"autoload": {
 		"psr-4": {

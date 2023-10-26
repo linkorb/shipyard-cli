@@ -1,0 +1,11 @@
+# This file defines the Shipyard chart metadata
+name: whoami
+version: 1.0.0
+description: A whoami stack for Shipyard
+keywords:
+  - whoami
+  - shipyard
+  - traefik
+maintainers:
+  - name: LinkORB Engineering
+    url: https://engineering.linkorb.com

@@ -1,0 +1,36 @@
+version: "3.3"
+
+services:
+
+  whoami:
+    image: {{ Values.image.repository }}:{{ Values.image.tag }}
+    {% if Values.port -%}
+    ports:
+      - "{{ Values.port }}:80"
+    {% endif %}
+
+    labels:
+      - "orchestrator=shipyard"
+      {% if Values.traefik.enabled -%}
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ Stack.name }}.rule=Host(`{{ Values.hostname }}`)"
+      - "traefik.http.routers.{{ Stack.name }}.entrypoints={{ Values.traefik.entrypoints }}"
+      {% if Values.traefik.tls.enabled -%}
+      - "traefik.http.routers.{{ Stack.name }}.tls.certresolver={{ Values.traefik.tls.certresolver }}"
+      {% endif %}
+      - "traefik.http.services.{{ Stack.name }}.loadbalancer.server.port=80" # hardcoded to 80, as the container only listens on 80
+      {% if Values.traefik.middlewares -%}
+      - "traefik.http.routers.{{ Stack.name }}.middlewares={{Values.traefik.middlewares }}"
+      {%- endif %}
+      {% endif %}
+
+    {% if Values.traefik.network -%}
+    networks:
+      - {{ Values.traefik.network }}
+    {% endif %}
+
+{% if Values.traefik.network -%}
+networks:
+  {{ Values.traefik.network }}:
+    external: true
+  {%- endif %}

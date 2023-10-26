@@ -6,6 +6,7 @@ use DirectoryIterator;
 use Symfony\Component\Yaml\Yaml;
 use Twig\Loader\FilesystemLoader;
 use Twig\Environment;
+use JsonSchema\Validator;
 
 use LinkORB\Shipyard\DockerConnectionAdapter;
 
@@ -78,6 +79,33 @@ class Stack
         }
 
         $this->values = Yaml::parseFile($values_file);
+
+        // Json-schema validation start
+        $json_schema_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'values.schema.json';
+        $yaml_schema_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'values.schema.yaml';
+        $validator = new Validator;
+        $schema = NULL;
+        if (file_exists($json_schema_file)) {
+            $schema = json_decode(file_get_contents($json_schema_file));
+        } else if (file_exists($yaml_schema_file)) {
+            $schema = Yaml::parseFile($yaml_schema_file);
+        }
+
+        if ($schema) {
+
+            $validator->validate($this->values, (object)$schema);
+
+            if ($validator->isValid()) {
+                $this->output->writeln("The supplied Values validates against the schema.");
+            } else {
+                $invalid = "";
+                foreach ($validator->getErrors() as $error) {
+                    $invalid .= sprintf("[%s] %s\n", $error['property'], $error['message']);
+                }
+                throw new \RuntimeException(sprintf("JSON does not validate. Violations: %s", $invalid));
+            }
+        }
+        // Json-schema validation end
     }
 
     private function loadTemplates()

@@ -8,7 +8,7 @@ stacks:
   - name: my-whoami
     chart: whoami
     host: swarm-host-a
-    values: my-whoami/values.yaml
+    values: my-whoami/values.sops.yaml
 
   - name: my-mariadb
     chart: mariadb

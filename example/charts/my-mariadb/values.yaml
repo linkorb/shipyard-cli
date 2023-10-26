@@ -1,0 +1,22 @@
+# This file defines the Shipyard stack *default* values, which can be overriden through a stack-specific values file
+
+image:
+  # image repository
+  repository: traefik/whoami
+  # image tag
+  tag: latest
+
+# required values are initialized with null, not with (invalid) example values.
+hostname:
+
+# port to expose on the host
+port:
+
+# optionally define traefik configuration for traefik environments
+traefik:
+  enabled: false
+  middlewares: null
+  network: traefik
+  tls:
+    enabled: false
+    certresolver: null
