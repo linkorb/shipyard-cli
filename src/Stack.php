@@ -9,6 +9,7 @@ use Twig\Environment;
 use JsonSchema\Validator;
 
 use LinkORB\Shipyard\DockerConnectionAdapter;
+use LinkORB\Component\Sops\Sops;
 
 
 class Stack
@@ -77,8 +78,16 @@ class Stack
         if (!file_exists($values_file)) {
             throw new \RuntimeException(sprintf('%s file not found.', $values_file));
         }
+        $sops_used = str_contains($values_file, '.sops.yaml');
+        if($sops_used) {
+            $sops = new Sops();
+            $sops->decrypt($values_file);
+            $values_file = str_replace('.sops', '', $values_file);
+        }
 
         $this->values = Yaml::parseFile($values_file);
+        if($sops_used)
+            unlink($values_file);
 
         // Json-schema validation start
         $json_schema_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'values.schema.json';
