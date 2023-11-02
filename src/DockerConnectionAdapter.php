@@ -2,6 +2,12 @@
 
 namespace LinkORB\Shipyard;
 
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
+
 class DockerConnectionAdapter implements ConnectionAdapterInterface
 {
     private $stackPath = NULL;
@@ -16,23 +22,34 @@ class DockerConnectionAdapter implements ConnectionAdapterInterface
             $path_parts = pathinfo($file);
             $dest_file = $this->stackPath . DIRECTORY_SEPARATOR . str_replace('.tmp', '', $path_parts['filename']);
 
-            $return = shell_exec('mkdir -p ' . $this->stackPath);
-            if ($return) {
-                unlink($file);
-                throw new \RuntimeException($return);
+            $filesystem = new Filesystem();
+            if (!$filesystem->exists($this->stackPath)) {
+                try {
+                    $filesystem->mkdir(
+                        Path::normalize($this->stackPath),
+                    );
+                } catch (IOExceptionInterface $exception) {
+                    $filesystem->remove($file);
+                    throw new \RuntimeException("An error occurred while creating your directory at " . $exception->getPath());
+                }
             }
-            $return = shell_exec('cp ' . $file . ' ' . $dest_file);                // Copy a template file to the /opt directory.
-            unlink($file);
-            if ($return) {
-                throw new \RuntimeException($return);
+
+            try {
+                $filesystem->copy(Path::normalize($file), Path::normalize($dest_file));
+            } catch (IOExceptionInterface $exception) {
+                $filesystem->remove($file);
+                throw new \RuntimeException("File copying error occured at " . $exception->getPath());
             }
+            $filesystem->remove($file);
         }
     }
     public function dockerComposeUp()
     {
-        $return = shell_exec('docker compose up');
-        if ($return) {
-            throw new \RuntimeException($return);
+        $process = new Process(['docker', 'compose', 'up']);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
         }
     }
 }

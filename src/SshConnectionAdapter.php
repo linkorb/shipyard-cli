@@ -16,6 +16,7 @@ class SshConnectionAdapter implements ConnectionAdapterInterface
             echo $line;
         });
         $this->connection->disablePasswordAuthentication();
+        $this->connection->disableStrictHostKeyChecking();
     }
 
     public function writeTemplateFiles($files)
@@ -43,7 +44,7 @@ class SshConnectionAdapter implements ConnectionAdapterInterface
         $process = $this->connection->execute('docker compose up');
 
         if (!$process->isSuccessful()) {
-            throw new \RuntimeException($process->getOutput());
+            throw new \RuntimeException('Docker compose up failed.');
         }
     }
 

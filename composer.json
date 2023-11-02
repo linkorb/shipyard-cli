@@ -26,7 +26,9 @@
         "spatie/ssh": "^1.9",
         "twig/twig": "^3.0",
         "justinrainbow/json-schema": "^5.2",
-        "linkorb/sops-php": "^1.0"
+        "linkorb/sops-php": "^1.0",
+        "symfony/filesystem": "^6.3",
+        "symfony/process": "^6.3"
     },
 	"autoload": {
 		"psr-4": {
