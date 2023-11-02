@@ -5,7 +5,7 @@ Helm + Helmfile for Docker compose, implemented as a Symfony command.
 
 ## About Shipyard
 
-Shipyard is a tool for orchestrating Docker swarm clusters and stacks from Ansible playbooks.
+Shipyard is a tool for orchestrating Docker swarm clusters and stacks.
 
 It is heavily inspired by [Helm](https://helm.sh/) and [helmfile](https://github.com/helmfile/helmfile) and provides the same concepts in a non-kubernetes but swarm-enabled environment. 
 
@@ -46,6 +46,10 @@ stacks:
     chart: whoami
     host: swarm-host-b
     values: my-whoami-b/values.yaml
+settings:
+  charts_path: example/charts 
+  target: remote  # Target connection. Values: remote/local
+  stack_path: /opt/shipyard/stacks  # Template directory path on the remote host
 ```
 
 ## Creating a Shipyard Chart
@@ -64,14 +68,15 @@ my-shipyard-chart/
     env.example # another example config file template for this chart
 ```
 
-The Shipyard role will copy over all files in the `templates/` directory onto the target host, and then render them using the values from the `values.yaml` file.
+The shipyard-cli will copy over all files in the `templates/` directory onto the target host, and then render them using the values from the `values.yaml` file.
+If the host is `localhost`, the files will be copied onto the localhost.
 
 ## values.yaml / values.sops.yaml and chart default values
 
 Every stack (one instance of a chart), takes a values file containing the values for that instance of the chart.
-The values are loaded from `{{shipyard_stacks_path}}/{{stack_name}}/values.yaml`. If a `values.sops.yaml` is detected, it is also loaded and decrypted automatically (based on the `.sops.yaml` in the root of your repo).
+The values are loaded from `{{stack_path}}/{{stack_name}}/values.yaml`. If a `values.sops.yaml` is detected, it is also loaded and decrypted automatically (based on the `.sops.yaml` in the root of your repo).
 
-Every chaty provides a default values.yaml too. Any stack-level value that remains undefined will be set to the chart's default value.
+Every chat provides a default values.yaml too. Any stack-level value that remains undefined will be set to the chart's default value.
 
 The loading (and override precedence) order is:
 
@@ -81,7 +86,7 @@ The loading (and override precedence) order is:
 
 ## Target host directory structure
 
-On the target hosts (Docker Swarm managers), the role will create the following directory structure:
+On the target hosts(Docker Swarm managers), Shipyard-cli will create the following directory structure:
 
 ```
 /opt/shipyard/stacks/
@@ -92,12 +97,12 @@ On the target hosts (Docker Swarm managers), the role will create the following 
 ```
 
 ## Deploying the stacks to Docker Swarm
-
+After the templates are rendered and written to the host, the Shipyard-cli will run `docker compose up` on the target host to deploy the docker swarm stack.
 
 
 ## Example Shipyard Chart
 
-See the [example/shipyard/chart/whoami](example/shipyard/chart/whoami) directory for an example Shipyard Chart.
+See the [example/shipyard/chart/whoami](example/charts/whoami) directory for an example Shipyard Chart.
 
 ## License
 

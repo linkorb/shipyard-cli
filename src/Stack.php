@@ -22,6 +22,15 @@ class Stack
     private $values = NULL;
     private $templateFiles = [];
 
+
+    /**
+     * Constructor.
+     * Saves the parameters for stack.
+     * @param Array  $config        An array object received from `shipyard.yaml`
+     * @param String $chartsPath    String of the charts path. Default chart path: {cwd}/shipyard/charts
+     * @param String $stackPath     String of the stack path.  Default `opt/shipyard/stacks`. Stacks path on remote host or local.
+     * @param Object $output        Symfony CLI ouput
+     */
     public function __construct($config, $chartsPath, $stackPath, $output)
     {
         // # Config example values
@@ -40,6 +49,9 @@ class Stack
         $this->loadTemplates();
     }
 
+    /**
+     * Run the stack based on the variables loaded from `stacks.yaml`.
+     */
     public function run()
     {
         $this->output->writeln(sprintf('- Stack run `%s(%s)`', $this->config['name'], $this->config['host']));
@@ -79,14 +91,14 @@ class Stack
             throw new \RuntimeException(sprintf('%s file not found.', $values_file));
         }
         $sops_used = str_contains($values_file, '.sops.yaml');
-        if($sops_used) {
+        if ($sops_used) {
             $sops = new Sops();
             $sops->decrypt($values_file);
             $values_file = str_replace('.sops', '', $values_file);
         }
 
         $this->values = Yaml::parseFile($values_file);
-        if($sops_used)
+        if ($sops_used)
             unlink($values_file);
 
         // Json-schema validation start

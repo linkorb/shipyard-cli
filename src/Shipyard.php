@@ -8,10 +8,16 @@ class Shipyard
 {
 
     private $chartsPath = 'shipyard/charts';            // Default chart path: {cwd}/shipyard/charts
-    private $stackPath = 'opt/shipyard/stacks';         // Default stacks path on remote host or local
+    private $stackPath = 'opt/shipyard/stacks';         // Default `opt/shipyard/stacks`. Stacks path on remote host or local.
     private $stacks = NULL;
-    private $output = NULL;
+    private $output = NULL;                             // Symfony CLI ouput
 
+    /**
+     * Constructor.
+     * Read and validate the file `shipyard.yaml` and save the values extracted.
+     * @param String $yaml     The string to file path for `shipyard.yaml`.
+     * @param Object $output   The console output of the Symfony CLI.
+     */
     public function __construct($yaml, $output)
     {
         if (array_key_exists('settings', $yaml)) {
@@ -32,6 +38,9 @@ class Shipyard
         $this->output = $output;
     }
 
+    /**
+     * Run the stacks of the shipyard.
+     */
     public function apply()
     {
         foreach ($this->stacks as $s) {

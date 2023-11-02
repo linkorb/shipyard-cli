@@ -12,10 +12,19 @@ class DockerConnectionAdapter implements ConnectionAdapterInterface
 {
     private $stackPath = NULL;
 
+    /**
+     * Constructor
+     * @param String $stackPath     Receives the stack path
+     */
     public function __construct($stackPath)
     {
         $this->stackPath = $stackPath;
     }
+
+    /**
+     * Copy the template files to the `stackpath` on the localhost.
+     * @param Array $files      A files array of the template files.
+     */
     public function writeTemplateFiles($files)
     {
         foreach ($files as $file) {
@@ -43,6 +52,10 @@ class DockerConnectionAdapter implements ConnectionAdapterInterface
             $filesystem->remove($file);
         }
     }
+
+    /**
+     * Run the docker compose up
+     */
     public function dockerComposeUp()
     {
         $process = new Process(['docker', 'compose', 'up']);
