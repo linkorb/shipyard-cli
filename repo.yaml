@@ -2,9 +2,11 @@ codeowners:
 - owners:
   - '@joostfaassen'
   pattern: '*'
-description: ''
+description: 'Shipyard symfony CLI'
 license: mit
 name: shipyard-cli
-readme:
-  enable_generation: false
 type: other
+visibility: public
+github:
+  features:
+    issues: true
