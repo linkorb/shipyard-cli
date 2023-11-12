@@ -1,0 +1,10 @@
+codeowners:
+- owners:
+  - '@joostfaassen'
+  pattern: '*'
+description: ''
+license: mit
+name: shipyard-cli
+readme:
+  enable_generation: false
+type: other
