@@ -21,7 +21,7 @@ class Stack
     private $stackPath = NULL;
     private $values = NULL;
     private $templateFiles = [];
-
+    private $tag = NULL;
 
     /**
      * Constructor.
@@ -29,9 +29,10 @@ class Stack
      * @param Array  $config        An array object received from `shipyard.yaml`
      * @param String $chartsPath    String of the charts path. Default chart path: {cwd}/shipyard/charts
      * @param String $stackPath     String of the stack path.  Default `opt/shipyard/stacks`. Stacks path on remote host or local.
+     * @param String $tag           String of tag that optionally only deploys stacks with this tag. Default: empty
      * @param Object $output        Symfony CLI ouput
      */
-    public function __construct($config, $chartsPath, $stackPath, $output)
+    public function __construct($config, $chartsPath, $stackPath, $tag, $output)
     {
         // # Config example values
         // name: my-whoami
@@ -44,6 +45,7 @@ class Stack
         $this->chartsPath = $chartsPath;
         $this->stackPath = $stackPath . DIRECTORY_SEPARATOR . $this->config['name'];
         $this->output = $output;
+        $this->tag = $tag;
 
         $this->loadValues();
         $this->loadTemplates();
@@ -54,6 +56,13 @@ class Stack
      */
     public function run()
     {
+        if ($this->tag ) {
+            if(!array_key_exists('tag', $this->config) || $this->tag != $this->config['tag']) {
+                $this->output->writeln(sprintf('- Skip stack `%s(%s)` because of tag difference.', $this->config['name'], $this->config['host']));
+                return;
+            }
+        }
+
         $this->output->writeln(sprintf('- Stack run `%s(%s)`', $this->config['name'], $this->config['host']));
 
         if (array_key_exists('host', $this->config)) {

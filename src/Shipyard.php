@@ -11,6 +11,7 @@ class Shipyard
     private $stackPath = 'opt/shipyard/stacks';         // Default `opt/shipyard/stacks`. Stacks path on remote host or local.
     private $stacks = NULL;
     private $output = NULL;                             // Symfony CLI ouput
+    private $tag = NULL;
 
     /**
      * Constructor.
@@ -26,6 +27,9 @@ class Shipyard
             }
             if (array_key_exists('stack_path', $yaml['settings'])) {
                 $this->stackPath = $yaml['settings']['stack_path'];
+            }
+            if (array_key_exists('shipyard_tag', $yaml['settings'])) {
+                $this->tag = $yaml['settings']['shipyard_tag'];
             }
         }
 
@@ -44,7 +48,7 @@ class Shipyard
     public function apply()
     {
         foreach ($this->stacks as $s) {
-            $obj = new Stack($s, $this->chartsPath, $this->stackPath, $this->output);
+            $obj = new Stack($s, $this->chartsPath, $this->stackPath, $this->tag, $this->output);
             $obj->run();
         }
     }
