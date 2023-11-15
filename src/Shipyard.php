@@ -2,44 +2,29 @@
 
 namespace LinkORB\Shipyard;
 
-use LinkORB\Shipyard\Stack;
+use LinkORB\Shipyard\Model\Config;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Shipyard
 {
-
-    private $chartsPath = 'shipyard/charts';            // Default chart path: {cwd}/shipyard/charts
-    private $stackPath = 'opt/shipyard/stacks';         // Default `opt/shipyard/stacks`. Stacks path on remote host or local.
-    private $stacks = NULL;
-    private $output = NULL;                             // Symfony CLI ouput
-    private $tag = NULL;
+    private string $chartsPath = 'shipyard/charts';            // Default chart path: {cwd}/shipyard/charts
+    private string $stackPath = 'opt/shipyard/stacks';         // Default `opt/shipyard/stacks`. Stacks path on
 
     /**
-     * Constructor.
      * Read and validate the file `shipyard.yaml` and save the values extracted.
-     * @param String $yaml     The string to file path for `shipyard.yaml`.
-     * @param Object $output   The console output of the Symfony CLI.
      */
-    public function __construct($yaml, $output)
+    public function __construct(private readonly Config $config, private readonly OutputInterface $output)
     {
-        if (array_key_exists('settings', $yaml)) {
-            if (array_key_exists('charts_path', $yaml['settings'])) {
-                $this->chartsPath = $yaml['settings']['charts_path'];
-            }
-            if (array_key_exists('stack_path', $yaml['settings'])) {
-                $this->stackPath = $yaml['settings']['stack_path'];
-            }
-            if (array_key_exists('shipyard_tag', $yaml['settings'])) {
-                $this->tag = $yaml['settings']['shipyard_tag'];
-            }
-        }
-
-        if (array_key_exists('stacks', $yaml)) {
-            $this->stacks = $yaml['stacks'];
-        } else {
+        if (!$this->config->hasStacks()) {
             throw new \RuntimeException('No stacks found in shipyard.yaml.');
         }
 
-        $this->output = $output;
+        if (!$this->config->getSettings()?->getChartsPath()) {
+            $this->config->getSettings()->setChartsPath($this->chartsPath);
+        }
+        if (!$this->config->getSettings()?->getStackPath()) {
+            $this->config->getSettings()->setStackPath($this->stackPath);
+        }
     }
 
     /**
@@ -47,8 +32,8 @@ class Shipyard
      */
     public function apply()
     {
-        foreach ($this->stacks as $s) {
-            $obj = new Stack($s, $this->chartsPath, $this->stackPath, $this->tag, $this->output);
+        foreach ($this->config->getStacks() as $stack) {
+            $obj = new Stack($this->config, $stack->getName(), $this->output);
             $obj->run();
         }
     }
