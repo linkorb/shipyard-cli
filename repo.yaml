@@ -5,7 +5,7 @@ codeowners:
 description: 'Shipyard symfony CLI'
 license: mit
 name: shipyard-cli
-type: other
+type: library
 visibility: public
 github:
   features:
