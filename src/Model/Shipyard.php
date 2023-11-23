@@ -2,7 +2,7 @@
 
 namespace LinkORB\Shipyard\Model;
 
-class Config
+class Shipyard
 {
     /**
      * @var Stack[]

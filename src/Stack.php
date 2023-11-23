@@ -5,7 +5,7 @@ namespace LinkORB\Shipyard;
 use DirectoryIterator;
 use JsonSchema\Validator;
 use LinkORB\Component\Sops\Sops;
-use LinkORB\Shipyard\Model\Config;
+use LinkORB\Shipyard\Model\Shipyard;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 use Twig\Environment;
@@ -15,18 +15,15 @@ use Twig\Loader\FilesystemLoader;
 class Stack
 {
     private array $templateFiles = [];
-    private array $values;
+    private ?array $values;
     private ?Model\Stack $model;
 
     /**
      * Saves the parameters for stack.
      */
-    public function __construct(private readonly Config $config, string $name, private readonly OutputInterface $output)
+    public function __construct(private readonly Shipyard $shipyard, string $name, private readonly OutputInterface $output)
     {
-        $this->model = $this->config->getStackByName($name);
-
-        $this->loadValues();
-        $this->loadTemplates();
+        $this->model = $this->shipyard->getStackByName($name);
     }
 
     private function loadValues()
@@ -35,7 +32,7 @@ class Stack
             throw new \RuntimeException('Stack values not found.');
         }
 
-        $values_file = $this->config->getValuesFile($this->model->getName());
+        $values_file = $this->shipyard->getValuesFile($this->model->getName());
         if (!file_exists($values_file)) {
             throw new \RuntimeException(sprintf('%s file not found.', $values_file));
         }
@@ -83,7 +80,7 @@ class Stack
 
     protected function getSettings(): Model\Settings
     {
-        return $this->config->getSettings();
+        return $this->shipyard->getSettings();
     }
 
     private function loadTemplates()
@@ -139,6 +136,9 @@ class Stack
             $this->model->getName(),
             $this->model->getHost(),
         ));
+
+        $this->loadValues();
+        $this->loadTemplates();
 
         if (!$this->model->getHost()) {
             throw new \RuntimeException('`host` is missing in stack configuration.');

@@ -2,7 +2,7 @@
 
 namespace LinkORB\Shipyard\Command;
 
-use LinkORB\Shipyard\Model\Config;
+use LinkORB\Shipyard\Model\Shipyard as ShipyardModel;
 use LinkORB\Shipyard\Shipyard;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,7 +30,7 @@ class ApplyCommand extends Command
             [new YamlEncoder()],
         );
 
-        $config = $serializer->deserialize(file_get_contents('shipyard.yaml'), Config::class, 'yaml');
+        $config = $serializer->deserialize(file_get_contents('shipyard.yaml'), ShipyardModel::class, 'yaml');
 
         $shipyard = new Shipyard($config, $output);
 

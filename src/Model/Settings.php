@@ -13,9 +13,13 @@ class Settings
 
     private string $shipyard_tag;
 
+    private string $default_chartsPath = 'shipyard/charts';            // Default chart path: {cwd}/shipyard/charts
+    private string $default_stackPath = 'opt/shipyard/stacks';         // Default `opt/shipyard/stacks`. Stacks path on
+
+
     public function getChartsPath(): string
     {
-        return $this->charts_path;
+        return $this->charts_path ? $this->charts_path: $this->default_chartsPath;
     }
 
     public function setChartsPath(string $charts_path): void
@@ -35,7 +39,7 @@ class Settings
 
     public function getStackPath(): string
     {
-        return $this->stack_path;
+        return $this->stack_path ? $this->stack_path: $this->default_stackPath;
     }
 
     public function setStackPath(string $stack_path): void
