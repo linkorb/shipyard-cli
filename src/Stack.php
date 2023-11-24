@@ -3,93 +3,40 @@
 namespace LinkORB\Shipyard;
 
 use DirectoryIterator;
-use Symfony\Component\Yaml\Yaml;
-use Twig\Loader\FilesystemLoader;
-use Twig\Environment;
 use JsonSchema\Validator;
-
-use LinkORB\Shipyard\DockerConnectionAdapter;
 use LinkORB\Component\Sops\Sops;
+use LinkORB\Shipyard\Model\Shipyard;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 
 class Stack
 {
-
-    private $config = NULL;
-    private $output = NULL;
-    private $chartsPath = NULL;
-    private $stackPath = NULL;
-    private $values = NULL;
-    private $templateFiles = [];
-
+    private array $templateFiles = [];
+    private ?array $values;
+    private ?Model\Stack $model;
 
     /**
-     * Constructor.
      * Saves the parameters for stack.
-     * @param Array  $config        An array object received from `shipyard.yaml`
-     * @param String $chartsPath    String of the charts path. Default chart path: {cwd}/shipyard/charts
-     * @param String $stackPath     String of the stack path.  Default `opt/shipyard/stacks`. Stacks path on remote host or local.
-     * @param Object $output        Symfony CLI ouput
      */
-    public function __construct($config, $chartsPath, $stackPath, $output)
+    public function __construct(private readonly Shipyard $shipyard, string $name, private readonly OutputInterface $output)
     {
-        // # Config example values
-        // name: my-whoami
-        // chart: whoami
-        // host: swarm-host-a
-        // values: my-whoami/values.yaml
-
-        $this->config = $config;
-
-        $this->chartsPath = $chartsPath;
-        $this->stackPath = $stackPath . DIRECTORY_SEPARATOR . $this->config['name'];
-        $this->output = $output;
-
-        $this->loadValues();
-        $this->loadTemplates();
-    }
-
-    /**
-     * Run the stack based on the variables loaded from `stacks.yaml`.
-     */
-    public function run()
-    {
-        $this->output->writeln(sprintf('- Stack run `%s(%s)`', $this->config['name'], $this->config['host']));
-
-        if (array_key_exists('host', $this->config)) {
-            $host = $this->config['host'];
-            if ($host == 'localhost') {
-                $adapter = new DockerConnectionAdapter($this->stackPath);
-
-                $this->output->writeln('copying template files...');
-                $adapter->writeTemplateFiles($this->templateFiles);
-
-                $this->output->writeln('docker compose up...');
-                $adapter->dockerComposeUp();
-            } else {
-                $adapter = new SshConnectionAdapter($this->stackPath, $host);
-
-                $this->output->writeln('copying template files...');
-                $adapter->writeTemplateFiles($this->templateFiles);
-
-                $this->output->writeln('docker compose up...');
-                $adapter->dockerComposeUp();
-            }
-        } else {
-            throw new \RuntimeException('`host` is missing in stack configuration.');
-        }
+        $this->model = $this->shipyard->getStackByName($name);
     }
 
     private function loadValues()
     {
-        if (!array_key_exists('values', $this->config)) {
+        if (!$this->model->getValues()) {
             throw new \RuntimeException('Stack values not found.');
         }
 
-        $values_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['values'];
+        $values_file = $this->shipyard->getValuesFile($this->model->getName());
         if (!file_exists($values_file)) {
             throw new \RuntimeException(sprintf('%s file not found.', $values_file));
         }
+
         $sops_used = str_contains($values_file, '.sops.yaml');
         if ($sops_used) {
             $sops = new Sops();
@@ -102,10 +49,12 @@ class Stack
             unlink($values_file);
 
         // Json-schema validation start
-        $json_schema_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'values.schema.json';
-        $yaml_schema_file = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'values.schema.yaml';
+        $path = $this->getSettings()->getChartsPath() . DIRECTORY_SEPARATOR
+            . $this->model->getName() . DIRECTORY_SEPARATOR;
+        $json_schema_file = $path . 'values.schema.json';
+        $yaml_schema_file = $path . 'values.schema.yaml';
         $validator = new Validator;
-        $schema = NULL;
+        $schema = null;
         if (file_exists($json_schema_file)) {
             $schema = json_decode(file_get_contents($json_schema_file));
         } else if (file_exists($yaml_schema_file)) {
@@ -129,9 +78,15 @@ class Stack
         // Json-schema validation end
     }
 
+    protected function getSettings(): Model\Settings
+    {
+        return $this->shipyard->getSettings();
+    }
+
     private function loadTemplates()
     {
-        $template_path = $this->chartsPath . DIRECTORY_SEPARATOR . $this->config['name'] . DIRECTORY_SEPARATOR . 'templates';
+        $template_path = $this->getSettings()->getChartsPath() . DIRECTORY_SEPARATOR
+            . $this->model->getName() . DIRECTORY_SEPARATOR . 'templates';
         if (!is_dir($template_path)) {
             throw new \RuntimeException(sprintf('%s directory does not found.', $template_path));
         }
@@ -152,12 +107,64 @@ class Stack
     {
         $loader = new FilesystemLoader($dirPath);
         $twig = new Environment($loader, [
-            'cache' => $this->chartsPath . DIRECTORY_SEPARATOR . '/compilation_cache',
+            'cache' => $this->getSettings()->getChartsPath() . DIRECTORY_SEPARATOR
+                . '/compilation_cache',
         ]);
         $template = $twig->load($filename);
         $rendered = $template->render(['Values' => $this->values]);
         $tmpPath = $dirPath . DIRECTORY_SEPARATOR . $filename . '.tmp';
         file_put_contents($tmpPath, $rendered);
         return $tmpPath;
+    }
+
+    /**
+     * Run the stack based on the variables loaded from `stacks.yaml`.
+     */
+    public function run()
+    {
+        if ($this->model->getTag() != $this->getSettings()->getShipyardTag()) {
+            $this->output->writeln(sprintf(
+                '- Skip stack `%s(%s)` because of tag difference.',
+                $this->model->getName(),
+                $this->model->getHost(),
+            ));
+            return;
+        }
+
+        $this->output->writeln(sprintf(
+            '- Stack run `%s(%s)`',
+            $this->model->getName(),
+            $this->model->getHost(),
+        ));
+
+        $this->loadValues();
+        $this->loadTemplates();
+
+        if (!$this->model->getHost()) {
+            throw new \RuntimeException('`host` is missing in stack configuration.');
+        }
+
+        if ($this->model->getHost() == 'localhost') {
+            $adapter = new DockerConnectionAdapter($this->getStackPath());
+
+            $this->output->writeln('copying template files...');
+            $adapter->writeTemplateFiles($this->templateFiles);
+
+            $this->output->writeln('docker compose up...');
+            $adapter->dockerComposeUp();
+        } else {
+            $adapter = new SshConnectionAdapter($this->getStackPath(), $this->model->getHost());
+
+            $this->output->writeln('copying template files...');
+            $adapter->writeTemplateFiles($this->templateFiles);
+
+            $this->output->writeln('docker compose up...');
+            $adapter->dockerComposeUp();
+        }
+    }
+
+    protected function getStackPath(): string
+    {
+        return $this->getSettings()->getStackPath() . DIRECTORY_SEPARATOR . $this->model->getName();
     }
 }
