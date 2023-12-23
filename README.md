@@ -1,5 +1,6 @@
-Shipyard symfony CLI
-======================
+<!-- Managed by https://github.com/linkorb/repo-ansible. Manual changes will be overwritten. -->
+shipyard-cli
+============
 
 Helm + Helmfile for Docker compose, implemented as a Symfony command.
 
@@ -16,6 +17,10 @@ It is heavily inspired by [Helm](https://helm.sh/) and [helmfile](https://github
 * **shipyard.yaml**: a file defining which Charts to instantiate using which values on which docker hosts. (similar to a helmfile.yaml file)
 
 As you can see, the concepts are very similar to Helm and helmfile. The main difference is that Shipyard is not kubernetes-specific and does not require a kubernetes cluster to run. Instead, it uses Docker Swarm to deploy the stacks.
+
+Build status: [![Release](https://github.com/linkorb/shipyard-cli/actions/workflows/30-release-and-build.yaml/badge.svg)](https://github.com/linkorb/shipyard-cli/actions/workflows/30-release-and-build.yaml)
+
+
 
 
 ## Usage
@@ -51,7 +56,7 @@ stacks:
     values: my-whoami-b/values.yaml
     tag: apps
 settings:
-  charts_path: example/charts 
+  charts_path: example/charts
   target: remote  # Target connection. Values: remote/local
   stack_path: /opt/shipyard/stacks  # Template directory path on the remote host
   shipyard_tag: apps # Optionally only deploy stacks with this tag. Default: empty
@@ -67,7 +72,7 @@ my-shipyard-chart/
   LICENSE # the license for this chart
   README.md # the readme for this chart
   values.yaml # the default values for this chart
-  templates/ # the jinja2 templates for this chart 
+  templates/ # the jinja2 templates for this chart
     docker-compose.yml # the docker compose template file for this chart
     example.conf # an example config file template for this chart
     env.example # another example config file template for this chart
@@ -109,6 +114,15 @@ After the templates are rendered and written to the host, the Shipyard-cli will 
 
 See the [example/shipyard/chart/whoami](example/charts/whoami) directory for an example Shipyard Chart.
 
-## License
+## Contributing
 
-MIT. Please refer to the [license file](LICENSE) for details.
+We welcome contributions to make this repository even better. Whether it's fixing a bug, adding a feature, or improving documentation, your help is highly appreciated. To get started, fork this repository then clone your fork.
+
+Be sure to familiarize yourself with LinkORB's [Contribution Guidelines](/CONTRIBUTING.md) for our standards around commits, branches, and pull requests, as well as our [code of conduct](/CODE_OF_CONDUCT.md) before submitting any changes.
+
+If you are unable to implement changes you like yourself, don't hesitate to open a new issue report so that we or others may take care of it.
+## Brought to you by the LinkORB Engineering team
+
+<img src="http://www.linkorb.com/d/meta/tier1/images/linkorbengineering-logo.png" width="200px" /><br />
+Check out our other projects at [linkorb.com/engineering](http://www.linkorb.com/engineering).
+By the way, we're hiring!
