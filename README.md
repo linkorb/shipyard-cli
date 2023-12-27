@@ -34,27 +34,32 @@ The `shipyard.yaml` file defines which stacks get deployed to which hosts. It is
 stacks:
   - name: my-traefik
     chart: traefik
-    host: swarm-host-a
+    host: localhost
     values: my-traefik/values.yaml
+    tag: lb
 
   - name: my-whoami
     chart: whoami
     host: swarm-host-a
-    values: my-whoami/values.yaml
+    values: my-whoami/values.sops.yaml
+    tag: apps
 
   - name: my-mariadb
     chart: mariadb
     host: swarm-host-a
     values: my-mariadb/values.yaml
+    tag: db
 
   - name: my-whoami-b
     chart: whoami
     host: swarm-host-b
     values: my-whoami-b/values.yaml
+    tag: apps
 settings:
   charts_path: example/charts
   target: remote  # Target connection. Values: remote/local
   stack_path: /opt/shipyard/stacks  # Template directory path on the remote host
+  shipyard_tag: apps # Optionally only deploy stacks with this tag. Default: empty
 ```
 
 ## Creating a Shipyard Chart
