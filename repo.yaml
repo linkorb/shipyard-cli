@@ -4,6 +4,7 @@ codeowners:
   pattern: '*'
 description: 'Shipyard symfony CLI'
 license: mit
+license_year: 2023
 name: shipyard-cli
 type: library
 visibility: public
