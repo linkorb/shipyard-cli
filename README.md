@@ -18,7 +18,6 @@ It is heavily inspired by [Helm](https://helm.sh/) and [helmfile](https://github
 
 As you can see, the concepts are very similar to Helm and helmfile. The main difference is that Shipyard is not kubernetes-specific and does not require a kubernetes cluster to run. Instead, it uses Docker Swarm to deploy the stacks.
 
-Build status: [![Release](https://github.com/linkorb/shipyard-cli/actions/workflows/30-release-and-build.yaml/badge.svg)](https://github.com/linkorb/shipyard-cli/actions/workflows/30-release-and-build.yaml)
 
 
 
