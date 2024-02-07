@@ -6,7 +6,7 @@ description: 'Shipyard symfony CLI'
 license: mit
 license_year: 2023
 name: shipyard-cli
-type: library
+type: php-cli
 visibility: public
 github:
   features:
