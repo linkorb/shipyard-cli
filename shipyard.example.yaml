@@ -25,4 +25,3 @@ settings:
   target: remote
   # Template directory path on the remote host
   stack_path: /opt/shipyard/stacks
-  shipyard_tag: apps

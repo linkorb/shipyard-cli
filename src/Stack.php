@@ -122,7 +122,7 @@ class Stack
      */
     public function run()
     {
-        if ($this->model->getTag() != $this->getSettings()->getShipyardTag()) {
+        if ($this->getSettings()->getShipyardTag() && $this->model->getTag() != $this->getSettings()->getShipyardTag()) {
             $this->output->writeln(sprintf(
                 '- Skip stack `%s(%s)` because of tag difference.',
                 $this->model->getName(),

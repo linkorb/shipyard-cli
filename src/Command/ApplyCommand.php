@@ -7,6 +7,7 @@ use LinkORB\Shipyard\Shipyard;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
@@ -32,6 +33,16 @@ class ApplyCommand extends Command
 
         $config = $serializer->deserialize(file_get_contents('shipyard.yaml'), ShipyardModel::class, 'yaml');
 
+        $tag = $input->getOption('tag') ? $input->getOption('tag') : False;
+        $settings = $config->getSettings();
+        
+        if($tag) {
+            $settings->setShipyardTag($tag);
+        } else {
+            $settings->setShipyardTag(false);
+        }
+        $config->setSettings($settings);
+
         $shipyard = new Shipyard($config, $output);
 
         $shipyard->apply();
@@ -43,7 +54,8 @@ class ApplyCommand extends Command
     {
         $this
             ->setName('apply')
-            ->setDescription('Shipyard apply');
+            ->setDescription('Shipyard apply')
+            ->addOption('tag', 't', InputOption::VALUE_OPTIONAL, 'Tag for stacks to run');
     }
 
 }
